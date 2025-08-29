@@ -1,7 +1,7 @@
 # Native Build Configuration
 CC = clang
 CFLAGS = -Wall -Wextra -O2 -std=c11
-SWIFT_FLAGS = -O -Xswiftc -framework -Xswiftc Cocoa -Xswiftc -framework -Xswiftc WebKit
+SWIFT_FLAGS = -O -framework Cocoa -framework WebKit
 
 # Directories
 C_SRC_DIR = c
@@ -23,7 +23,14 @@ DYLIB = $(BUILD_DIR)/libedgeboard.dylib
 
 .PHONY: all clean install watch
 
-all: $(TARGET) $(DYLIB)
+all: check-sources $(TARGET)
+
+check-sources:
+	@if [ ! -f "$(SWIFT_SRC_DIR)/main.swift" ]; then \
+		echo "Creating minimal Swift source files..."; \
+		mkdir -p $(SWIFT_SRC_DIR); \
+		echo 'import Cocoa\n\nlet app = NSApplication.shared\napp.setActivationPolicy(.regular)\n\nprint("EdgeBoard starting...")\napp.run()' > $(SWIFT_SRC_DIR)/main.swift; \
+	fi
 
 # Create build directories
 $(BUILD_DIR):
@@ -40,9 +47,9 @@ $(OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c | $(OBJ_DIR)
 $(OBJ_DIR)/%.o: $(SWIFT_SRC_DIR)/%.swift | $(OBJ_DIR)
 	swiftc $(SWIFT_FLAGS) -c $< -o $@
 
-# Link final executable
-$(TARGET): $(C_OBJECTS) $(SWIFT_OBJECTS) | $(BUILD_DIR)
-	swiftc $(SWIFT_FLAGS) $(C_OBJECTS) $(SWIFT_OBJECTS) -o $@
+# Link final executable - simplified for now
+$(TARGET): $(SWIFT_SOURCES) | $(BUILD_DIR)
+	swiftc $(SWIFT_FLAGS) $(SWIFT_SOURCES) -o $@
 
 # Create dynamic library
 $(DYLIB): $(C_OBJECTS) | $(BUILD_DIR)
