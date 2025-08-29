@@ -184,10 +184,6 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
     
     func showOverlay() {
         if !isVisible {
-            overlayWindow.orderFront(nil)
-            isVisible = true
-            updateUI() // Update with latest clipboard data
-            
             // Animate in from the right edge
             let currentFrame = overlayWindow.frame
             let hiddenFrame = NSRect(
@@ -196,17 +192,19 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
                 width: currentFrame.width,
                 height: currentFrame.height
             )
-            
             overlayWindow.setFrame(hiddenFrame, display: false)
-            
+            overlayWindow.setIsVisible(true)
+            overlayWindow.orderFrontRegardless()
+            isVisible = true
+            updateUI() // Update with latest clipboard data
             NSAnimationContext.runAnimationGroup { context in
                 context.duration = 0.3
                 context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-                overlayWindow.animator().setFrame(currentFrame, display: true)
+                self.overlayWindow.animator().setFrame(currentFrame, display: true)
             }
         }
     }
-    
+
     func hideOverlay() {
         if isVisible {
             let currentFrame = overlayWindow.frame
@@ -216,13 +214,12 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
                 width: currentFrame.width,
                 height: currentFrame.height
             )
-            
             NSAnimationContext.runAnimationGroup({ context in
                 context.duration = 0.3
                 context.timingFunction = CAMediaTimingFunction(name: .easeIn)
-                overlayWindow.animator().setFrame(hiddenFrame, display: true)
+                self.overlayWindow.animator().setFrame(hiddenFrame, display: true)
             }) {
-                self.overlayWindow.orderOut(nil)
+                self.overlayWindow.setIsVisible(false)
                 self.isVisible = false
             }
         }
