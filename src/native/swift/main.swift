@@ -6,6 +6,23 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
     var webView: WKWebView!
     var isVisible = false
     var statusItem: NSStatusItem?
+    var clipboardHistory: [ClipboardItem] = []
+    var clipboardChangeCount: Int = 0
+    var clipboardTimer: Timer?
+    
+    struct ClipboardItem {
+        let id: String
+        let content: String
+        let type: String
+        let timestamp: Date
+        let size: Int
+        
+        var timeAgo: String {
+            let formatter = RelativeDateTimeFormatter()
+            formatter.dateTimeStyle = .named
+            return formatter.localizedString(for: timestamp, relativeTo: Date())
+        }
+    }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusBarItem()
