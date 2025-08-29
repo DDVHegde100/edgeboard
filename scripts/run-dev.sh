@@ -1,58 +1,35 @@
 #!/bin/bash
 
-# EdgeBoard Development Runner
-# Builds and runs EdgeBoard in development mode
+# EdgeBoard Development Runner - Native Overlay Mode
+# Builds and runs EdgeBoard as a native macOS overlay (no web server needed)
 
 set -e
 
-echo "🚀 Starting EdgeBoard Development Environment..."
+echo "🚀 Starting EdgeBoard Native Overlay..."
 
-# Kill any existing processes
+# Kill any existing EdgeBoard processes
 echo "🧹 Cleaning up existing processes..."
-pkill -f "webpack serve" || true
 pkill -f "EdgeBoard" || true
 
 # Build native app
-echo "🔨 Building Swift application..."
+echo "🔨 Building Swift overlay application..."
 cd "$(dirname "$0")/.."
 mkdir -p build/native
+
+# Compile Swift app
 swiftc -O -framework Cocoa -framework WebKit src/native/swift/main.swift -o build/native/EdgeBoard
 
-# Start React dev server in background
-echo "⚛️  Starting React development server..."
-npm run dev:ui &
-REACT_PID=$!
-
-# Wait for React server to start
-echo "⏳ Waiting for React server to start..."
-sleep 3
-
-# Start native app
-echo "📱 Launching EdgeBoard..."
-./build/native/EdgeBoard &
-NATIVE_PID=$!
-
-echo "✅ EdgeBoard is running!"
+echo "📱 Launching EdgeBoard overlay..."
 echo ""
-echo "🌐 React Dev Server: http://localhost:3000"
-echo "📱 Native App: Running in background"
+echo "✅ EdgeBoard is starting!"
 echo ""
-echo "Press Ctrl+C to stop both processes..."
+echo "� How to use:"
+echo "   • Click the ⚡ icon in your menu bar to toggle overlay"
+echo "   • Overlay slides in from the right edge of your screen"
+echo "   • Click outside overlay or menu bar icon to hide"
+echo ""
+echo "🛑 To stop: Press Ctrl+C or quit from menu bar"
+echo ""
 
-# Function to cleanup on exit
-cleanup() {
-    echo ""
-    echo "🛑 Stopping EdgeBoard..."
-    kill $REACT_PID 2>/dev/null || true
-    kill $NATIVE_PID 2>/dev/null || true
-    pkill -f "webpack serve" || true
-    pkill -f "EdgeBoard" || true
-    echo "✅ Cleanup complete"
-    exit 0
-}
-
-# Set trap to cleanup on Ctrl+C
-trap cleanup SIGINT SIGTERM
-
-# Wait for user to stop
-wait
+# Start native app (this will block until app is quit)
+./build/native/EdgeBoard
