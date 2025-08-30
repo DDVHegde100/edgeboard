@@ -9,6 +9,8 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
     var clipboardHistory: [ClipboardItem] = []
     var clipboardChangeCount: Int = 0
     var clipboardTimer: Timer?
+    var hotkeyMonitor: Any?
+    var localHotkeyMonitor: Any?
     
     struct ClipboardItem {
         let id: String
@@ -30,9 +32,30 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
         setupWebView()
         initializeClipboardMonitoring()
         loadProfessionalHTML()
-        
+        setupGlobalHotkey()
         // Hide dock icon and make it a background app
         NSApp.setActivationPolicy(.accessory)
+    }
+
+    func setupGlobalHotkey() {
+        // Listen for Cmd+Ctrl+V globally (when app is not focused)
+        hotkeyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self = self else { return }
+            if event.modifierFlags.intersection([.command, .control]) == [.command, .control] && event.keyCode == 9 {
+                DispatchQueue.main.async {
+                    self.toggleOverlay()
+                }
+            }
+        }
+        // Listen for Cmd+Ctrl+V locally (when app is focused)
+        localHotkeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self = self else { return event }
+            if event.modifierFlags.intersection([.command, .control]) == [.command, .control] && event.keyCode == 9 {
+                self.toggleOverlay()
+                return nil // Swallow event
+            }
+            return event
+        }
     }
     
     func initializeClipboardMonitoring() {
@@ -197,7 +220,8 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
     }
     
     @objc func toggleOverlay() {
-        if isVisible {
+        // Always check window state and update isVisible accordingly
+        if overlayWindow.isVisible || isVisible {
             hideOverlay()
         } else {
             showOverlay()
@@ -253,10 +277,10 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
     func loadProfessionalHTML() {
         let htmlContent = """
         <!DOCTYPE html>
-        <html lang="en">
+        <html lang=\"en\">
         <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta charset=\"UTF-8\">
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
             <title>EdgeBoard Professional</title>
             <style>
                 * {
@@ -264,7 +288,6 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
                     padding: 0;
                     box-sizing: border-box;
                 }
-                
                 body {
                     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
                     background: transparent;
@@ -274,18 +297,13 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
                     -webkit-font-smoothing: antialiased;
                     text-rendering: optimizeLegibility;
                 }
-                
                 .overlay-container {
                     background: rgba(8, 8, 12, 0.92);
                     backdrop-filter: blur(60px) saturate(200%) brightness(110%);
                     -webkit-backdrop-filter: blur(60px) saturate(200%) brightness(110%);
                     border: 1px solid rgba(255, 255, 255, 0.15);
                     border-radius: 24px;
-                    box-shadow: 
-                        0 32px 80px rgba(0, 0, 0, 0.6),
-                        0 0 0 1px rgba(255, 255, 255, 0.1),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.15),
-                        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+                    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
                     margin: 12px;
                     height: calc(100vh - 24px);
                     display: flex;
@@ -293,7 +311,28 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
                     position: relative;
                     overflow: hidden;
                 }
-                
+                .close-btn {
+                    position: absolute;
+                    top: 18px;
+                    right: 18px;
+                    width: 32px;
+                    height: 32px;
+                    background: rgba(255,255,255,0.08);
+                    border: 1px solid rgba(255,255,255,0.12);
+                    border-radius: 50%;
+                    color: #fff;
+                    font-size: 18px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    z-index: 10;
+                    transition: background 0.2s;
+                }
+                .close-btn:hover {
+                    background: rgba(255,255,255,0.18);
+                }
                 .overlay-container::before {
                     content: '';
                     position: absolute;
@@ -640,7 +679,8 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
             </style>
         </head>
         <body>
-            <div class="overlay-container">
+            <div class=\"overlay-container\">
+                <div class=\"close-btn\" onclick=\"window.webkit.messageHandlers.closeOverlay.postMessage(null)\">&times;</div>
                 <div class="header">
                     <h1>EdgeBoard</h1>
                     <div class="subtitle">Professional Clipboard Manager</div>
@@ -771,6 +811,8 @@ extension EdgeBoardApp: WKScriptMessageHandler {
         case "exportHistory":
             // TODO: Implement export functionality
             print("Export requested")
+        case "closeOverlay":
+            DispatchQueue.main.async { self.hideOverlay() }
         default:
             break
         }
