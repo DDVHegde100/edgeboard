@@ -27,10 +27,9 @@ const App: React.FC = () => {
   return (
     <div className="edgeboard-app">
       {/* Header */}
-      <div className="header">
+      <div className="header gradient-header">
         <div className="logo">
-          <span className="logo-icon">⚡</span>
-          <span className="logo-text">EdgeBoard</span>
+          <span className="logo-icon gradient-logo">EdgeBoard</span>
         </div>
         <div className="time">
           {time.toLocaleTimeString([], { 
@@ -42,10 +41,10 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <div className="main-content">
-        <div className="glass-panel">
-          <h2>🚀 Welcome to EdgeBoard</h2>
-          <p>Your productivity overlay is ready!</p>
-          
+        <div className="glass-panel pro-glass">
+          <h2 className="gradient-title">Welcome to EdgeBoard</h2>
+          <p className="subtitle">Your productivity overlay is ready!</p>
+
           <div className="quick-stats">
             <div className="stat-item">
               <span className="stat-label">Status</span>
@@ -58,15 +57,9 @@ const App: React.FC = () => {
           </div>
 
           <div className="action-buttons">
-            <button className="btn primary">
-              📋 Clipboard
-            </button>
-            <button className="btn secondary">
-              🚀 Launcher
-            </button>
-            <button className="btn secondary">
-              📊 Monitor
-            </button>
+            <button className="btn primary gradient-btn">Clipboard</button>
+            <button className="btn secondary glass-btn">Launcher</button>
+            <button className="btn secondary glass-btn">Monitor</button>
           </div>
         </div>
       </div>
@@ -77,6 +70,6 @@ const App: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default App;
