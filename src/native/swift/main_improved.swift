@@ -104,14 +104,36 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
                     "content": item.content,
                     "type": item.type,
                     "timeAgo": item.timeAgo,
-                    "size": "\\(item.size) bytes"
+                    "size": "\(item.size) bytes",
+                    "preview": self.generatePreview(for: item)
                 ]
             })
-            
             if let jsonData = jsonData, let jsonString = String(data: jsonData, encoding: .utf8) {
-                let script = "window.updateClipboardData(\\(jsonString))"
+                let script = "window.updateClipboardData(\(jsonString))"
                 webView.evaluateJavaScript(script) { _, _ in }
             }
+        }
+    }
+
+    func generatePreview(for item: ClipboardItem) -> String {
+        switch item.type {
+        case "URL":
+            return "<a href='\(item.content)' target='_blank' style='color:#8b5cf6;text-decoration:underline;'>\(item.content)</a>"
+        case "CODE":
+            let code = item.content.replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
+            return "<pre style='background:rgba(99,102,241,0.08);padding:8px 12px;border-radius:8px;font-size:12px;overflow-x:auto;'>\(code.prefix(200))</pre>"
+        case "TEXT":
+            return "<span>\(item.content.prefix(80))\(item.content.count > 80 ? "…" : "")</span>"
+        case "DOCUMENT":
+            return "<span>\(item.content.prefix(80))\(item.content.count > 80 ? "…" : "")</span>"
+        case "PATH":
+            return "<span style='color:#34C759;'>\(item.content)</span>"
+        default:
+            // Try to detect image data (base64 PNG/JPEG)
+            if item.content.hasPrefix("data:image/") {
+                return "<img src='\(item.content)' style='max-width:60px;max-height:40px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.12);' />"
+            }
+            return "<span>\(item.content.prefix(80))\(item.content.count > 80 ? "…" : "")</span>"
         }
     }
     
@@ -679,9 +701,9 @@ class EdgeBoardApp: NSObject, NSApplicationDelegate {
                     }
                     
                     historyContainer.innerHTML = clipboardData.map((item, index) => `
-                        <div class="clipboard-item" onclick="copyToClipboard('${item.content.replace(/'/g, "\\\\'").replace(/"/g, '\\\\"')}', this)" style="animation-delay: ${index * 0.05}s">
+                        <div class="clipboard-item" onclick="copyToClipboard('${item.content.replace(/'/g, "\\'").replace(/"/g, '\\\\"')}', this)" style="animation-delay: ${index * 0.05}s">
                             <div class="clipboard-type">${item.type}</div>
-                            <div class="clipboard-content" title="${item.content.replace(/'/g, "&apos;").replace(/"/g, "&quot;")}">${item.content}</div>
+                            <div class="clipboard-content" title="${item.content.replace(/'/g, "&apos;").replace(/"/g, "&quot;")}">${item.preview}</div>
                             <div class="clipboard-meta">
                                 <div class="clipboard-time">${item.timeAgo}</div>
                                 <div class="clipboard-size">${item.size}</div>
