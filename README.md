@@ -1,5 +1,3 @@
-git clone https://github.com/DDVHegde100/edgeboard.git
-
 # EdgeBoard
 
 **The Professional macOS Edge Overlay for Productivity Power Users**
@@ -8,7 +6,7 @@ EdgeBoard is a next-generation, always-on-top overlay for macOS, designed to sup
 
 ---
 
-## ✨ Features
+## Features
 
 - **Clipboard Manager**: Searchable, filterable clipboard history with instant previews
 - **Global Hotkey**: Toggle the overlay from anywhere (default: <kbd>Cmd</kbd> + <kbd>Ctrl</kbd> + <kbd>V</kbd>)
@@ -17,13 +15,9 @@ EdgeBoard is a next-generation, always-on-top overlay for macOS, designed to sup
 - **Glassmorphism UI**: Modern, animated, and 4K-ready overlay
 - **Extensible**: Built to support future widgets (launcher, notes, timers, etc.)
 
-<p align="center">
-	<img src="assets/edgeboard_screenshot.png" alt="EdgeBoard Screenshot" width="600"/>
-</p>
-
 ---
 
-## 🛠️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────┐
@@ -39,7 +33,7 @@ EdgeBoard is a next-generation, always-on-top overlay for macOS, designed to sup
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ```bash
 # Clone the repository
@@ -62,7 +56,7 @@ swiftc -O -framework Cocoa -framework WebKit src/native/swift/main_improved.swif
 
 ---
 
-## 🖥️ Usage
+## Usage
 
 - **Toggle Overlay:** <kbd>Cmd</kbd> + <kbd>Ctrl</kbd> + <kbd>V</kbd>
 - **Search Clipboard:** Type in the search bar at the top
@@ -73,7 +67,7 @@ swiftc -O -framework Cocoa -framework WebKit src/native/swift/main_improved.swif
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 edgeboard/
@@ -88,7 +82,7 @@ edgeboard/
 
 ---
 
-## 📈 Roadmap & Status
+## Roadmap & Status
 
 - [x] Modern overlay window with glassmorphism
 - [x] Clipboard history, search, and preview
@@ -100,7 +94,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for detailed progress.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read the [contributing guidelines](docs/CONTRIBUTING.md) before submitting pull requests.
 
